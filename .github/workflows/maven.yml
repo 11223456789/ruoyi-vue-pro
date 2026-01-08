@@ -1,31 +1,26 @@
 name: Java CI with Maven
 
 on:
-  push:
-    branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
-  workflow_dispatch: # 开启手动触发
+  workflow_dispatch: # 仅保留手动触发（避免代码推送自动触发）
 
 jobs:
-  build:
+  build-server:
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up JDK 8
-      uses: actions/setup-java@v3
-      with:
-        java-version: '8'
-        distribution: 'temurin'
-        cache: maven
-    - name: Configure Maven mirror
-      run: |
-        echo "<settings><mirrors><mirror><id>aliyunmaven</id><url>https://maven.aliyun.com/repository/public</url><mirrorOf>central</mirrorOf></mirror></settings>" > ~/.m2/settings.xml
-    - name: Build with Maven
-      run: mvn clean package -DskipTests
-    - name: Upload artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: yudao-server.jar
-        path: yudao-server/target/yudao-server.jar
+      - uses: actions/checkout@v4
+      - name: Set up JDK 8
+        uses: actions/setup-java@v4
+        with:
+          java-version: '8'
+          distribution: 'temurin'
+          cache: maven
+      - name: 配置阿里云Maven镜像
+        run: |
+          echo "<settings><mirrors><mirror><id>aliyun</id><url>https://maven.aliyun.com/repository/public</url><mirrorOf>central</mirrorOf></mirror></settings>" > ~/.m2/settings.xml
+      - name: 编译yudao-server模块
+        run: mvn clean package -DskipTests -pl yudao-server -am # 只编译后端启动模块
+      - name: 上传Jar包产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: 后端Jar包
+          path: yudao-server/target/yudao-server.jar # CI编译后会自动生成这个路径
