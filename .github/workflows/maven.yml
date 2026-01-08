@@ -27,5 +27,8 @@ jobs:
     java-version: '8'
     distribution: 'temurin'
         cache: maven
+        - name: Configure Maven mirror
+  run: |
+    echo "<settings><mirrors><mirror><id>aliyunmaven</id><url>https://maven.aliyun.com/repository/public</url><mirrorOf>central</mirrorOf></mirror></mirrors></settings>" > ~/.m2/settings.xml
     - name: Build with Maven
       run: mvn -B package --file pom.xml -Dmaven.test.skip=true
