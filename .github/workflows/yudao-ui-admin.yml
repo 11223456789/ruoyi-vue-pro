@@ -5,33 +5,39 @@ on:
     branches: [ "master" ]
   pull_request:
     branches: [ "master" ]
-  workflow_dispatch:
+  workflow_dispatch: # 支持手动触发编译
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest # 使用GitHub提供的Ubuntu环境
 
     steps:
+    # 1. 拉取仓库代码到云端服务器
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Set up Node.js 16 # 适配更多依赖版本
+    # 2. 配置Node.js 16环境（适配前端依赖版本）
+    - name: Set up Node.js 16
       uses: actions/setup-node@v4
       with:
         node-version: '16'
 
+    # 3. 配置淘宝npm镜像（解决国内依赖下载慢的问题）
     - name: Configure npm mirror
       run: npm config set registry https://registry.npmmirror.com/
 
-    - name: Install dependencies (兼容依赖)
-      run: cd yudao-ui-admin && npm install --force --legacy-peer-deps # 增加legacy-peer-deps解决版本冲突
+    # 4. 进入前端目录（yudao-ui），强制安装依赖（解决版本冲突）
+    - name: Install frontend dependencies
+      run: cd yudao-ui && npm install --force --legacy-peer-deps
 
+    # 5. 编译前端项目，生成dist静态文件
     - name: Build frontend project
-      run: cd yudao-ui-admin && npm run build:prod
+      run: cd yudao-ui && npm run build:prod
 
+    # 6. 上传编译好的dist包（方便下载使用）
     - name: Upload dist artifact
       uses: actions/upload-artifact@v4
       with:
-        name: dist
-        path: yudao-ui-admin/dist
-        if-no-files-found: error
+        name: dist # 下载时显示的包名
+        path: yudao-ui/dist # 前端编译后dist目录的实际路径
+        if-no-files-found: error # 若找不到dist文件则直接报错，便于排查
