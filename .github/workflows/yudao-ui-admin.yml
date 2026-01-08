@@ -1,49 +1,37 @@
-# 前端编译工作流名称
 name: yudao-ui-admin CI
 
-# 触发条件：push/pull_request到master分支 + 手动触发（新手重点用手动触发）
 on:
   push:
     branches: [ "master" ]
   pull_request:
     branches: [ "master" ]
-  workflow_dispatch: # 手动触发开关，必须保留
+  workflow_dispatch:
 
-# 定义编译任务
 jobs:
   build:
-    # 使用Ubuntu最新版环境，适配所有编译依赖
     runs-on: ubuntu-latest
 
-    # 编译步骤（一步步执行，新手不用改）
     steps:
-    # 1. 拉取仓库代码到云端服务器
     - name: Checkout code
-      uses: actions/checkout@v4 # 用最新版避免兼容问题
+      uses: actions/checkout@v4
 
-    # 2. 配置Node.js环境（指定14版本，和官方教程一致）
-    - name: Set up Node.js 14
+    - name: Set up Node.js 16 # 适配更多依赖版本
       uses: actions/setup-node@v4
       with:
-        node-version: '14' # 核心：匹配ruoyi-vue-pro前端要求的Node版本
-        # 移除了 cache: 'npm' 配置，解决锁文件缺失报错
+        node-version: '16'
 
-    # 3. 配置淘宝npm镜像（解决国内依赖下载慢/失败）
     - name: Configure npm mirror
       run: npm config set registry https://registry.npmmirror.com/
 
-    # 4. 进入前端目录，强制安装依赖（解决版本冲突）
-    - name: Install dependencies
-      run: cd yudao-ui-admin && npm install --force
+    - name: Install dependencies (兼容依赖)
+      run: cd yudao-ui-admin && npm install --force --legacy-peer-deps # 增加legacy-peer-deps解决版本冲突
 
-    # 5. 编译前端项目，生成dist静态文件包
     - name: Build frontend project
       run: cd yudao-ui-admin && npm run build:prod
 
-    # 6. 上传编译好的dist包（方便下载）
     - name: Upload dist artifact
       uses: actions/upload-artifact@v4
       with:
-        name: dist # 下载时显示的包名
-        path: yudao-ui-admin/dist # 前端编译后文件的路径（和官方目录一致）
-        if-no-files-found: error # 找不到文件直接报错，方便排查
+        name: dist
+        path: yudao-ui-admin/dist
+        if-no-files-found: error
