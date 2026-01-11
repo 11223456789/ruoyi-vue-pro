@@ -12,7 +12,7 @@ jobs:
     - name: Checkout yudao-ui-admin-vue2 code
       uses: actions/checkout@v4
       with:
-        repository: yudaocode/yudao-ui-admin-vue2 # 子模块对应的独立仓库地址
+        repository: 11223456789/yudao-ui-admin-vue2 # 子模块对应的独立仓库地址
         ref: master
 
     # 2. 配置Node.js 14（适配Vue2版本依赖）
